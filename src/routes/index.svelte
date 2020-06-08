@@ -1,46 +1,91 @@
-<style>
-	h1, figure, p {
-		text-align: center;
-		margin: 0 auto;
-	}
+<script>
+  import io from "socket.io-client";
+  import { fade } from "svelte/transition";
+  import { tick } from "svelte";
 
-	h1 {
-		font-size: 2.8em;
-		text-transform: uppercase;
-		font-weight: 700;
-		margin: 0 0 0.5em 0;
-	}
+  import Heading from "../components/Heading.svelte";
 
-	figure {
-		margin: 0 0 1em 0;
-	}
+  const socket = io();
+  const placeholder = "Type your message here...";
+  const greeting = `You have joined the chat. Use '/nick your_nickname' to set your nickname!`;
 
-	img {
-		width: 100%;
-		max-width: 400px;
-		margin: 0 0 1em 0;
-	}
+  let messages = [greeting];
+  let message = "";
+  let name = "Anonymous";
+  let numUsersConnected = 0;
 
-	p {
-		margin: 1em auto;
-	}
+  socket.on("message", function(message) {
+    messages = messages.concat(message);
+    updateScroll();
+  });
 
-	@media (min-width: 480px) {
-		h1 {
-			font-size: 4em;
-		}
-	}
-</style>
+  socket.on("user joined", function({ message, numUsers }) {
+    messages = messages.concat(message);
+    numUsersConnected = numUsers;
+    updateScroll();
+  });
+
+  socket.on("user left", function(numUsers) {
+    numUsersConnected = numUsers;
+    updateScroll();
+  });
+
+  function emitUserDisconnect() {
+    socket.emit("user disconnect", name);
+  }
+
+  function handleSubmit() {
+    if (message == "") {
+      return;
+    }
+
+    message = message.trim();
+
+    let messageString = `${name}: ${message}`;
+
+    if (message.slice(0, 5) == "/nick") {
+      let newName = message.slice(6);
+      messageString = `Server: ${name} changed their nickname to ${newName}`;
+      name = newName;
+    }
+
+    messages = messages.concat(messageString);
+    socket.emit("message", messageString);
+    updateScroll();
+    message = "";
+  }
+
+  async function updateScroll() {
+    const chatWindow = document.getElementById("chatWindow");
+    await tick();
+
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+</script>
 
 <svelte:head>
-	<title>Sapper project template</title>
+  <title>Chat App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
-<h1>Great success!</h1>
-
-<figure>
-	<img alt='Success Kid' src='successkid.jpg'>
-	<figcaption>Have fun with Sapper!</figcaption>
-</figure>
-
-<p><strong>Try editing this file (src/routes/index.svelte) to test live reloading.</strong></p>
+<svelte:window on:unload={emitUserDisconnect} />
+<body>
+  <div class="main">
+    <Heading text={'Chat App'} />
+    <div id="chatWindow">
+      <ul id="messages">
+        {#each messages as message}
+          <li transition:fade>{message}</li>
+        {/each}
+      </ul>
+    </div>
+    <form action="">
+      <input id="m" autocomplete="off" {placeholder} bind:value={message} />
+      <button on:click|preventDefault={handleSubmit}>Send</button>
+    </form>
+    <p id="numUsers">
+      There {numUsersConnected == 1 ? 'is' : 'are'} {numUsersConnected} {numUsersConnected == 1 ? 'user' : 'users'}
+      currently chatting!
+    </p>
+  </div>
+</body>
