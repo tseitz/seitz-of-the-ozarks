@@ -1,22 +1,38 @@
 <script>
-	import Nav from '../components/Nav.svelte';
+  import { stores } from "@sapper/app";
+  import { onMount } from "svelte";
+  import Nav from "../components/Nav.svelte";
+  let { session } = stores();
+  let loading = false;
+  onMount(async () => {
+    if (process.browser) {
+      const mod = await import("../firebase/auth.js");
+      let auth = mod.default;
 
-	export let segment;
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          session.update(s => {
+            s.user = user;
+            return s;
+          });
+          console.error("session updated", $session, $session.user);
+        } else {
+          session.update(s => {
+            s.user = undefined;
+            return s;
+          });
+          console.error("session updated", $session, $session.user);
+        }
+        loading = false;
+      });
+    }
+  });
+
+  export let segment;
 </script>
 
-<style>
-	main {
-		position: relative;
-		max-width: 56em;
-		background-color: white;
-		padding: 2em;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
-</style>
-
-<Nav {segment}/>
+<Nav {segment} />
 
 <main>
-	<slot></slot>
+  <slot />
 </main>

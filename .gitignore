@@ -5,3 +5,8 @@ yarn-error.log
 /cypress/screenshots/
 /__sapper__/
 .env
+.firebaserc
+static/css/generated
+config.js
+config/*
+!config/**.example
