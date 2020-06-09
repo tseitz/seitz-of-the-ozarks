@@ -2,6 +2,7 @@
   import io from "socket.io-client";
   import { fade } from "svelte/transition";
   import { tick } from "svelte";
+  import { init } from "@lib/mongo";
 
   import Heading from "../components/Heading.svelte";
 
