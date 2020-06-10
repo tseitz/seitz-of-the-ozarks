@@ -17,6 +17,8 @@ const onwarn = (warning, onwarn) =>
   (warning.code === 'CIRCULAR_DEPENDENCY' &&
     /[/\\]@sapper[/\\]/.test(warning.message)) ||
   onwarn(warning)
+const dedupe = (importee) =>
+  importee === 'svelte' || importee.startsWith('svelte/')
 
 export default {
   client: {
@@ -30,12 +32,16 @@ export default {
       svelte({
         dev,
         hydratable: true,
-        css: function (css) {
-          css.write('static/css/generated/main.css')
-        },
+        emitCss: true,
+        // css: function (css) {
+        //   css.write('static/css/generated/main.css')
+        // },
       }),
       globals(),
-      resolve(),
+      resolve({
+        browser: true,
+        dedupe,
+      }),
       commonjs(),
 
       legacy &&
@@ -84,7 +90,9 @@ export default {
         generate: 'ssr',
         dev,
       }),
-      resolve(),
+      resolve({
+        dedupe,
+      }),
       commonjs(),
     ],
     external: Object.keys(pkg.dependencies).concat(

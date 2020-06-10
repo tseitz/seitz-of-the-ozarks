@@ -3,8 +3,6 @@
   import { fade } from "svelte/transition";
   import { tick } from "svelte";
 
-  import Heading from "../components/Heading.svelte";
-
   const socket = io();
   const placeholder = "Type your message here...";
   const greeting = `You have joined the chat. Use '/nick your_nickname' to set your nickname!`;
@@ -71,7 +69,6 @@
 <svelte:window on:unload={emitUserDisconnect} />
 <body>
   <div class="main">
-    <Heading text={'Chat App'} />
     <div id="chatWindow">
       <ul id="messages">
         {#each messages as message}

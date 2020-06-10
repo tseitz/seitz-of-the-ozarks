@@ -11,11 +11,11 @@ import admin from './firebase/admin'
 const { PORT, NODE_ENV } = process.env
 const dev = NODE_ENV === 'development'
 
-const httpServer = http.createServer()
-const server = express()
+const app = express()
+const server = http.Server(app)
 
 let numUsers = 0
-io(httpServer).on('connection', function (socket) {
+io(server).on('connection', function (socket) {
   ++numUsers
   let message = 'Server: A new user has joined the chat'
   socket.emit('user joined', { message, numUsers })
@@ -39,7 +39,7 @@ io(httpServer).on('connection', function (socket) {
   })
 })
 
-server
+app
   .use(
     compression({ threshold: 0 }),
     sirv('static', { dev }),
