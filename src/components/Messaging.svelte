@@ -1,38 +1,32 @@
-<!-- <script>
+<script>
+  import io from "socket.io-client";
   import { fade } from "svelte/transition";
-  import { onMount, tick } from "svelte";
+  import { onDestroy, tick } from "svelte";
 
   const placeholder = "Type your message here...";
   const greeting = `You have joined the chat. Use '/nick your_nickname' to set your nickname!`;
 
-  let socket;
+  let socket = io();
   let messages = [greeting];
   let message = "";
   let name = "Anonymous";
   let numUsersConnected = 0;
 
-  onMount(async () => {
-    if (process.browser) {
-      io = await import("socket.io-client");
-      socket = io();
+  socket.on("message", function(message) {
+    messages = messages.concat(message);
+    updateScroll();
+  });
 
-      socket.on("message", function(message) {
-        messages = messages.concat(message);
-        updateScroll();
-      });
+  socket.on("user joined", function({ message, numUsers }) {
+    console.log(numUsers);
+    messages = messages.concat(message);
+    numUsersConnected = numUsers;
+    updateScroll();
+  });
 
-      socket.on("user joined", function({ message, numUsers }) {
-        console.log(numUsers);
-        messages = messages.concat(message);
-        numUsersConnected = numUsers;
-        updateScroll();
-      });
-
-      socket.on("user left", function(numUsers) {
-        numUsersConnected = numUsers;
-        updateScroll();
-      });
-    }
+  socket.on("user left", function(numUsers) {
+    numUsersConnected = numUsers;
+    updateScroll();
   });
 
   function emitUserDisconnect() {
@@ -66,7 +60,13 @@
 
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
-</script><svelte:head>
+
+  onDestroy(() => {
+    socket.emit("user disconnect", name);
+  });
+</script>
+
+<svelte:head>
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
@@ -90,4 +90,4 @@
       currently chatting!
     </p>
   </div>
-</body> -->
+</body>

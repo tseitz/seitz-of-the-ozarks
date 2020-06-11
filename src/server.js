@@ -6,7 +6,7 @@ import compression from 'compression'
 import * as sapper from '@sapper/server'
 import bodyParser from 'body-parser'
 import setUpSockets from './sockets'
-import admin from './firebase/admin'
+// import admin from './firebase/admin'
 
 const { PORT, NODE_ENV } = process.env
 const dev = NODE_ENV === 'development'
@@ -31,9 +31,7 @@ app.use(
 )
 
 const start = async () => {
-  // const client = await MongoClient.connect('mongodb://localhost/realtime')
-  // const db = client.db('realtime')
-  setUpSockets(server) //, db)
+  setUpSockets(server)
 
   server.listen(PORT, (err) => {
     if (err) console.log('error', err)
