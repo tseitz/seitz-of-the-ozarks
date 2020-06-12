@@ -1,31 +1,40 @@
 <script>
-  import Profile from "../components/Profile.svelte";
+  import { stores } from "@sapper/app";
+  import { onMount } from "svelte";
+  const { session } = stores();
 
-  import { auth, googleProvider } from "../client";
-  import { authState } from "rxfire/auth";
+  let client;
+  $: user = $session.user;
 
-  let user;
+  onMount(async () => {
+    if (process.browser) {
+      client = await import("../firebase/firebase.js");
+    }
+  });
 
-  const unsubscribe = authState(auth).subscribe(u => (user = u));
+  // function login() {
+  //   client.loginWithEmail("test@test.com", "testing").then(u => {
+  //     console.error("logged", $session.user);
+  //   });
+  // }
 
-  function login() {
-    auth.signInWithPopup(googleProvider);
+  function logoutNow() {
+    client.logout().then(() => {
+      console.log("logged out");
+    });
+  }
+
+  function loginWithGoogle() {
+    client.loginWithGoogle().then(u => {
+      console.log(u);
+    });
   }
 </script>
 
-<style>
-  section {
-    background: rgb(235, 235, 235);
-    padding: 20px;
-  }
-</style>
-
-<section>
-  {#if user}
-    <Profile {...user} />
-    <button on:click={() => auth.signOut()} class="button">Logout</button>
-    <hr />
-  {:else}
-    <button on:click={login} class="button">Signin with Google</button>
-  {/if}
-</section>
+{#if user}
+  You are logged in as : {user.displayName}
+  <button on:click={logoutNow} class="button">Logout</button>
+{:else}
+  <!-- <button on:click={login} class="button">Login</button> -->
+  <button on:click={loginWithGoogle} class="button">Login With Google</button>
+{/if}

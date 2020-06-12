@@ -9,8 +9,6 @@
   onMount(async () => {
     if (process.browser) {
       const { auth } = await import("../firebase/auth.js");
-      // const { Socket } = await import("socket.io-client");
-      // console.log(Socket);
 
       auth.onAuthStateChanged(user => {
         if (user) {
@@ -18,13 +16,13 @@
             s.user = user;
             return s;
           });
-          console.log("session updated", $session, $session.user);
+          console.log("session updated", $session.user);
         } else {
           session.update(s => {
             s.user = undefined;
             return s;
           });
-          console.log("session updated", $session, $session.user);
+          console.log("session updated", $session.user);
         }
         loading = false;
       });

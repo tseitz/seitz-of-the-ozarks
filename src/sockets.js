@@ -1,4 +1,5 @@
 import socket from 'socket.io'
+import admin from './firebase/admin'
 
 let numUsers = 0
 
@@ -7,13 +8,17 @@ let numUsers = 0
 //   emitter.emit('messages', messages)
 // }
 
-// const getMessages = (db) => {
-//   return db.collection('messages').find().toArray()
-// }
+const getMessages = async (socket, db) => {
+  const snapshot = await db.collection('chat').orderBy('timestamp', 'asc').get()
+  const messages = snapshot.docs.map((doc) => doc.data())
+  socket.emit('get messages', messages)
+  // socket.broadcast.emit('get messages', messages)
+}
 
-const handleNewMessage = (socket) => {
-  socket.on('message', function (msg) {
-    socket.broadcast.emit('message', msg)
+const handleNewMessage = (socket, db) => {
+  socket.on('message', function (messageObj) {
+    const snapshot = db.collection('chat').add(messageObj)
+    socket.broadcast.emit('message', messageObj)
   })
 }
 
@@ -21,27 +26,57 @@ const handleDisconnect = (socket) => {
   socket.on('user disconnect', function (name) {
     --numUsers
     console.log(name, 'left')
-    socket.broadcast.emit('message', `Server: ${name} has left the chat.`)
+    socket.broadcast.emit(
+      'user disconnect',
+      {
+        timestamp: Date.now(),
+        displayName: 'Server',
+        message: `${name} has left the chat.`,
+      },
+      numUsers
+    )
+    socket.disconnect()
   })
 }
 
-const setUpConnection = (io, name) => {
-  io.on('connection', async (socket, name) => {
+const handleLogout = (socket) => {
+  socket.on('user logged out', function (name) {
+    --numUsers
+    console.log(name, 'left')
+    socket.emit(
+      'user left',
+      {
+        timestamp: Date.now(),
+        displayName: 'Server',
+        message: `${name} has left the chat.`,
+      },
+      numUsers
+    )
+  })
+}
+
+const setUpConnection = (io) => {
+  io.on('connection', async (socket) => {
     ++numUsers
-    let message = ' has joined the chat'
-    console.log(name)
-    socket.emit('user joined', { message, numUsers })
-    socket.broadcast.emit('user joined', { message, numUsers })
-    // emitMessages(db, socket)
-    handleNewMessage(socket)
+    const db = admin.firestore()
+    handleNewMessage(socket, db)
+    await getMessages(socket, db)
+    const messageObj = {
+      displayName: 'Server',
+      message: 'has joined the chat',
+      timestamp: Date.now(),
+    }
+    socket.emit('user joined', { messageObj, numUsers }) // sends to all clients
+    socket.broadcast.emit('user joined', { messageObj, numUsers }) // sends to all other clients except new connection
     handleDisconnect(socket)
+    handleLogout(socket)
     console.log('connection set')
   })
 }
 
-export default (server, name) => {
+export default (server) => {
   const io = socket(server)
-  setUpConnection(io, name)
+  setUpConnection(io)
 }
 
 // let numUsers = 0

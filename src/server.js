@@ -4,9 +4,8 @@ import express from 'express'
 import session from 'express-session'
 import compression from 'compression'
 import * as sapper from '@sapper/server'
-import bodyParser from 'body-parser'
+// import bodyParser from 'body-parser'
 import setUpSockets from './sockets'
-// import admin from './firebase/admin'
 
 const { PORT, NODE_ENV } = process.env
 const dev = NODE_ENV === 'development'
@@ -17,7 +16,7 @@ const server = http.createServer(app)
 app.use(
   compression({ threshold: 0 }),
   sirv('static', { dev }),
-  bodyParser.json(),
+  // bodyParser.json(),
   session({
     secret: 'test',
     resave: false,
@@ -25,7 +24,7 @@ app.use(
   }),
   sapper.middleware({
     session: (req, res) => {
-      return {}
+      return {} // TODO: Figure out how this works
     },
   })
 )

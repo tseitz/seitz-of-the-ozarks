@@ -8,42 +8,64 @@
   const greeting = `You have joined the chat. Use '/name your_nickname' to set your nickname!`;
 
   $: user = {};
-  let socket = "";
-  let messages = [greeting];
+  $: name = "";
+  let socket = null;
+  let messages = [];
   let message = "";
-  let name = "";
   let numUsersConnected = 0;
 
   onMount(async function() {
     const { session } = await stores();
     session.subscribe(ses => {
-      user = ses.user;
-      name = ses.user.displayName;
-      socket = io();
+      if (ses.user) {
+        user = ses.user;
+        name = ses.user.displayName;
 
-      socket.on("message", function(message) {
-        messages = messages.concat(message);
-        updateScroll();
-      });
+        if (!socket) {
+          socket = io();
 
-      socket.on("user joined", function({ message, numUsers }) {
-        // console.log($user);
-        const mess = ses.user ? `${name} ${message}` : `A new user ${message}`;
-        messages = messages.concat(mess);
-        numUsersConnected = numUsers;
-        updateScroll();
-      });
+          socket.on("get messages", function(newMessages) {
+            messages = [
+              ...messages,
+              ...newMessages,
+              {
+                displayName: "Server",
+                timestamp: Date.now(),
+                message: greeting
+              }
+            ];
+            updateScroll();
+          });
 
-      socket.on("user left", function(numUsers) {
-        numUsersConnected = numUsers;
-        updateScroll();
-      });
+          socket.on("message", function(message) {
+            messages = messages.concat(message);
+            updateScroll();
+          });
+
+          socket.on("user joined", function({ message, numUsers }) {
+            // console.log($user);
+            const mess = ses.user
+              ? `${name} ${message.message}`
+              : `A new user ${message.message}`;
+            messages = messages.concat({ message: mess });
+            numUsersConnected = numUsers;
+            updateScroll();
+          });
+
+          socket.on("user disconnect", function(message, numUsers) {
+            console.log("left");
+            messages = messages.concat(message);
+            numUsersConnected = numUsers;
+            updateScroll();
+          });
+        }
+      }
     });
   });
 
-  // function emitUserDisconnect() {
-  //   socket.emit("user disconnect", name);
-  // }
+  function emitUserDisconnect() {
+    socket.emit("user disconnect", name);
+  }
 
   function handleSubmit() {
     if (message == "") {
@@ -52,18 +74,25 @@
 
     message = message.trim();
 
-    let messageString = `${name}: ${message}`;
+    const messageObj = {
+      displayName: name,
+      message,
+      timestamp: Date.now()
+    };
 
     if (message.slice(0, 5) == "/name") {
       let newName = message.slice(6);
-      messageString = `Server: ${name} changed their nickname to ${newName}`;
+      messageObj["displayName"] = "Server";
+      messageObj["message"] = `${name} changed their name to ${newName}`;
       name = newName;
     }
 
-    messages = messages.concat(messageString);
-    socket.emit("message", messageString);
+    messages = messages.concat(messageObj);
     updateScroll();
     message = "";
+
+    if (messageObj["displayName"] !== "Server")
+      socket.emit("message", messageObj);
   }
 
   async function updateScroll() {
@@ -75,6 +104,7 @@
 
   onDestroy(() => {
     socket.emit("user disconnect", name);
+    // socket.disconnect(true);
   });
 </script>
 
@@ -83,13 +113,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
-<!-- <svelte:window on:unload={emitUserDisconnect} /> -->
+<svelte:window on:unload={emitUserDisconnect} />
 <body>
   <div class="main">
     <div id="chatWindow">
       <ul id="messages">
         {#each messages as message}
-          <li transition:fade>{message}</li>
+          <li transition:fade>
+            {#if message.timestamp}
+              {new Date(message.timestamp)}
+            {:else}{Date.now()}{/if}
+            {#if message.displayName}{message.displayName}:{/if}
+            {message.message}
+          </li>
         {/each}
       </ul>
     </div>

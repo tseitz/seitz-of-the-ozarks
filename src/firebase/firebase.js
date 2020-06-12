@@ -1,38 +1,40 @@
-import { auth, google } from './auth'
+import { auth, googleProvider } from './auth'
 
-export const loginWithEmail = async (email, password) => {
-  console.log('logging in under ', email, password)
+// export const loginWithEmail = async (email, password) => {
+//   console.log('logging in under ', email, password)
 
-  let promise = auth.signInWithEmailAndPassword(email, password)
+//   let promise = auth.signInWithEmailAndPassword(email, password)
 
-  promise
-    .then((data) => console.log('finished logging in:', data))
-    .catch((e) => console.error(e))
+//   promise
+//     .then((data) => console.log('finished logging in:', data))
+//     .catch((e) => console.error(e))
 
-  return promise
-}
+//   return promise
+// }
 
 export const loginWithGoogle = async () => {
-  console.log('logging in with google', google)
+  console.log('logging in with google')
 
-  let promise = auth.signInWithPopup(google)
+  let promise = auth.signInWithPopup(googleProvider)
 
-  promise
+  return promise
     .then(function (result) {
       // This gives you a Google Access Token. You can use it to access the Google API.
-      var token = result.credential.accessToken
+      const token = result.credential.accessToken
       // The signed-in user info.
-      var user = result.user
-      console.log(result)
+      const user = result.user
+      return result
     })
     .catch(function (error) {
       // Handle Errors here.
-      var errorCode = error.code
-      var errorMessage = error.message
+      const errorCode = error.code
+      const errorMessage = error.message
       // The email of the user's account used.
-      var email = error.email
+      const email = error.email
       // The firebase.auth.AuthCredential type that was used.
-      var credential = error.credential
+      const credential = error.credential
+      console.log(error)
+      return error
     })
 }
 
