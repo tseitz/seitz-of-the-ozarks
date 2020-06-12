@@ -13,19 +13,18 @@
       // console.log(Socket);
 
       auth.onAuthStateChanged(user => {
-        console.log(user);
         if (user) {
           session.update(s => {
             s.user = user;
             return s;
           });
-          console.error("session updated", $session, $session.user);
+          console.log("session updated", $session, $session.user);
         } else {
           session.update(s => {
             s.user = undefined;
             return s;
           });
-          console.error("session updated", $session, $session.user);
+          console.log("session updated", $session, $session.user);
         }
         loading = false;
       });

@@ -1,37 +1,49 @@
 <script>
   import io from "socket.io-client";
+  import { stores } from "@sapper/app";
   import { fade } from "svelte/transition";
-  import { onDestroy, tick } from "svelte";
+  import { onMount, onDestroy, tick } from "svelte";
 
   const placeholder = "Type your message here...";
-  const greeting = `You have joined the chat. Use '/nick your_nickname' to set your nickname!`;
+  const greeting = `You have joined the chat. Use '/name your_nickname' to set your nickname!`;
 
-  let socket = io();
+  $: user = {};
+  let socket = "";
   let messages = [greeting];
   let message = "";
-  let name = "Anonymous";
+  let name = "";
   let numUsersConnected = 0;
 
-  socket.on("message", function(message) {
-    messages = messages.concat(message);
-    updateScroll();
+  onMount(async function() {
+    const { session } = await stores();
+    session.subscribe(ses => {
+      user = ses.user;
+      name = ses.user.displayName;
+      socket = io();
+
+      socket.on("message", function(message) {
+        messages = messages.concat(message);
+        updateScroll();
+      });
+
+      socket.on("user joined", function({ message, numUsers }) {
+        // console.log($user);
+        const mess = ses.user ? `${name} ${message}` : `A new user ${message}`;
+        messages = messages.concat(mess);
+        numUsersConnected = numUsers;
+        updateScroll();
+      });
+
+      socket.on("user left", function(numUsers) {
+        numUsersConnected = numUsers;
+        updateScroll();
+      });
+    });
   });
 
-  socket.on("user joined", function({ message, numUsers }) {
-    console.log(numUsers);
-    messages = messages.concat(message);
-    numUsersConnected = numUsers;
-    updateScroll();
-  });
-
-  socket.on("user left", function(numUsers) {
-    numUsersConnected = numUsers;
-    updateScroll();
-  });
-
-  function emitUserDisconnect() {
-    socket.emit("user disconnect", name);
-  }
+  // function emitUserDisconnect() {
+  //   socket.emit("user disconnect", name);
+  // }
 
   function handleSubmit() {
     if (message == "") {
@@ -42,7 +54,7 @@
 
     let messageString = `${name}: ${message}`;
 
-    if (message.slice(0, 5) == "/nick") {
+    if (message.slice(0, 5) == "/name") {
       let newName = message.slice(6);
       messageString = `Server: ${name} changed their nickname to ${newName}`;
       name = newName;
@@ -71,7 +83,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </svelte:head>
 
-<svelte:window on:unload={emitUserDisconnect} />
+<!-- <svelte:window on:unload={emitUserDisconnect} /> -->
 <body>
   <div class="main">
     <div id="chatWindow">

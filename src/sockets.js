@@ -25,10 +25,11 @@ const handleDisconnect = (socket) => {
   })
 }
 
-const setUpConnection = (io) => {
-  io.on('connection', async (socket) => {
+const setUpConnection = (io, name) => {
+  io.on('connection', async (socket, name) => {
     ++numUsers
-    let message = 'Server: A new user has joined the chat'
+    let message = ' has joined the chat'
+    console.log(name)
     socket.emit('user joined', { message, numUsers })
     socket.broadcast.emit('user joined', { message, numUsers })
     // emitMessages(db, socket)
@@ -38,9 +39,9 @@ const setUpConnection = (io) => {
   })
 }
 
-export default (server) => {
+export default (server, name) => {
   const io = socket(server)
-  setUpConnection(io)
+  setUpConnection(io, name)
 }
 
 // let numUsers = 0
