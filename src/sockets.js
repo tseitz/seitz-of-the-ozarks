@@ -66,7 +66,7 @@ const setUpConnection = (io) => {
       message: 'has joined the chat',
       timestamp: Date.now(),
     }
-    socket.emit('user joined', { messageObj, numUsers }) // sends to all clients
+    console.log(messageObj)
     socket.broadcast.emit('user joined', { messageObj, numUsers }) // sends to all other clients except new connection
     handleDisconnect(socket)
     handleLogout(socket)

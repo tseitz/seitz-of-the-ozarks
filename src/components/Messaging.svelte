@@ -42,12 +42,11 @@
             updateScroll();
           });
 
-          socket.on("user joined", function({ message, numUsers }) {
-            // console.log($user);
-            const mess = ses.user
-              ? `${name} ${message.message}`
-              : `A new user ${message.message}`;
-            messages = messages.concat({ message: mess });
+          socket.on("user joined", function({ messageObj, numUsers }) {
+            messageObj.message = ses.user
+              ? `${name} ${messageObj.message}`
+              : `A new user ${messageObj.message}`;
+            messages = messages.concat(messageObj);
             numUsersConnected = numUsers;
             updateScroll();
           });
@@ -95,6 +94,8 @@
       socket.emit("message", messageObj);
   }
 
+  function hash(email) {}
+
   async function updateScroll() {
     const chatWindow = document.getElementById("chatWindow");
     await tick();
@@ -108,6 +109,43 @@
   });
 </script>
 
+<style>
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    min-height: 75px;
+    margin: 10px;
+    display: grid;
+    grid-template-areas:
+      "image header"
+      "image message"
+      "image message";
+    grid-template-columns: 65px 1fr;
+  }
+
+  img {
+    border-radius: 100%;
+    vertical-align: top;
+    display: inline-block;
+    grid-area: image;
+  }
+
+  .message-header {
+    grid-area: header;
+  }
+
+  .message {
+    grid-area: message;
+  }
+
+  .display-name {
+    font-size: 1.1rem;
+  }
+</style>
+
 <svelte:head>
   <title>Chat App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -120,11 +158,22 @@
       <ul id="messages">
         {#each messages as message}
           <li transition:fade>
+            <img
+              src="https://www.gravatar.com/avatar/{message.emailHash}"
+              height="50px"
+              alt="gravatar" />
             {#if message.timestamp}
-              {new Date(message.timestamp)}
-            {:else}{Date.now()}{/if}
-            {#if message.displayName}{message.displayName}:{/if}
-            {message.message}
+              <span class="message-header">
+                <strong class="display-name">{message.displayName}</strong>
+                {new Intl.DateTimeFormat('en-US').format(message.timestamp)}
+              </span>
+            {:else}
+              <span>
+                {message.displayName}
+                {new Intl.DateTimeFormat('en-US').format(Date.now())}
+              </span>
+            {/if}
+            <span class="message">{message.message}</span>
           </li>
         {/each}
       </ul>

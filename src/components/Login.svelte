@@ -31,10 +31,21 @@
   }
 </script>
 
+<style>
+  .login-button,
+  .logout-button {
+    margin: 10px 0;
+  }
+</style>
+
 {#if user}
-  You are logged in as : {user.displayName}
-  <button on:click={logoutNow} class="button">Logout</button>
+  <div>You are logged in as: {user.displayName}</div>
+  <div class="logout-button">
+    <button on:click={logoutNow} class="button">Logout</button>
+  </div>
 {:else}
+  <div class="login-button">
+    <button on:click={loginWithGoogle} class="button">Login With Google</button>
+  </div>
   <!-- <button on:click={login} class="button">Login</button> -->
-  <button on:click={loginWithGoogle} class="button">Login With Google</button>
 {/if}
