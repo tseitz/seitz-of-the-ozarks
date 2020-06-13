@@ -1,7 +1,3 @@
-import dotenv from 'dotenv'
-
-dotenv.config()
-
 export default {
   type: 'service_account',
   project_id: process.env.FIRE_PROJ_ID,
