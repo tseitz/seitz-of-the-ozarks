@@ -1,5 +1,4 @@
-import serviceAccount from '../../config/serviceAccount.js'
-import config from './config.js'
+import { config, serviceAccount } from '../config'
 import * as admin from 'firebase-admin'
 
 admin.initializeApp({

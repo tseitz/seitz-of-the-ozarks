@@ -1,7 +1,7 @@
 import socket from 'socket.io'
-import admin from './firebase/admin'
 
 let numUsers = 0
+let admin
 
 // const emitMessages = async (db, emitter) => {
 //   const messages = await getMessages(db)
@@ -74,7 +74,8 @@ const setUpConnection = (io) => {
   })
 }
 
-export default (server) => {
+export default async (server) => {
+  admin = await import('./firebase/admin')
   const io = socket(server)
   setUpConnection(io)
 }

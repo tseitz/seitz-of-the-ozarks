@@ -38,6 +38,7 @@ export default {
         // },
       }),
       // globals(),
+      json(),
       resolve({
         browser: true,
         dedupe,

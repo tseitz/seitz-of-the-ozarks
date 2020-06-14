@@ -5,7 +5,9 @@ import session from 'express-session'
 import compression from 'compression'
 import * as sapper from '@sapper/server'
 // import bodyParser from 'body-parser'
+import setUpConfig from './config'
 import setUpSockets from './sockets'
+require('dotenv').config()
 
 const { PORT, NODE_ENV } = process.env
 const dev = NODE_ENV === 'development'
@@ -30,6 +32,7 @@ app.use(
 )
 
 const start = async () => {
+  await setUpConfig(process.env)
   setUpSockets(server)
 
   server.listen(PORT, (err) => {
@@ -38,3 +41,5 @@ const start = async () => {
 }
 
 start()
+
+export { app, sapper }
