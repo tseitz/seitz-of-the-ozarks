@@ -7,6 +7,7 @@
   import "firebase/performance";
   import "firebase/analytics";
 
+  // apparently this stuff is ok to leave public
   let firebaseConfig = {
     apiKey: "AIzaSyDGZWsVAzo9LB6H1SVieHtargEk0fN7DOI",
     authDomain: "seitz-of-the-ozarks.firebaseapp.com",
@@ -21,6 +22,8 @@
   const googleProvider = new firebase.auth.GoogleAuthProvider();
 
   firebase.initializeApp(firebaseConfig);
+
+  let newComment = "";
 </script>
 
 <style>
@@ -76,25 +79,42 @@
       <hr />
 
       <!-- 3. 📜 Get a Firestore document owned by a user -->
-      <Doc path={`posts/${user.uid}`} let:data={post} let:ref={postRef} log>
+      <Doc path={`chat/${user.uid}`} let:data={chat} let:ref={postRef} log>
 
-        <h2>{post.title}</h2>
+        <img
+          src="https://www.gravatar.com/avatar/{chat.emailHash}"
+          height="50px"
+          alt="gravatar" />
+        <h2>{chat.message}</h2>
 
         <p>
           Document created at
-          <em>{new Date(post.createdAt).toLocaleString()}</em>
+          <em>{new Date(chat.timestamp).toLocaleString()}</em>
         </p>
 
         <span slot="loading">Loading post...</span>
         <span slot="fallback">
           <button
             on:click={() => postRef.set({
-                title: '📜 I like Svelte',
-                createdAt: Date.now()
+                displayName: 'Tegan Seitz',
+                emailHash: 'af9d7c478225dd961293e1bc59a2a943',
+                message: '📜 Check out this message',
+                timestamp: Date.now()
               })}>
-            Create Document
+            Create Message
           </button>
         </span>
+
+        <input type="text" bind:value={newComment} />
+        <button
+          on:click={() => postRef.set({
+              displayName: 'Tegan Seitz',
+              emailHash: 'af9d7c478225dd961293e1bc59a2a943',
+              message: newComment,
+              timestamp: Date.now()
+            })}>
+          Add Message
+        </button>
 
         <!-- 4. 💬 Get all the comments in its subcollection -->
 
@@ -120,8 +140,10 @@
 
           <button
             on:click={() => commentsRef.add({
-                text: '💬 Me too!',
-                createdAt: Date.now()
+                displayName: 'Tegan Seitz',
+                emailHash: 'af9d7c478225dd961293e1bc59a2a943',
+                message: newComment,
+                timestamp: Date.now()
               })}>
             Add Comment
           </button>
