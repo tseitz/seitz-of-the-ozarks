@@ -79,23 +79,27 @@
       <hr />
 
       <!-- 3. 📜 Get a Firestore document owned by a user -->
-      <Doc path={`chat/${user.uid}`} let:data={chat} let:ref={postRef} log>
+      <Collection path={'chat'} let:data={chats} let:ref={chatRef} log>
 
-        <img
+        <!-- <img
           src="https://www.gravatar.com/avatar/{chat.emailHash}"
           height="50px"
           alt="gravatar" />
-        <h2>{chat.message}</h2>
+        <h2>{chat.message}</h2> -->
 
-        <p>
+        <!-- <p>
           Document created at
           <em>{new Date(chat.timestamp).toLocaleString()}</em>
-        </p>
+        </p> -->
+
+        {#each chats as chat}
+          <p>{chat.message}</p>
+        {/each}
 
         <span slot="loading">Loading post...</span>
         <span slot="fallback">
           <button
-            on:click={() => postRef.set({
+            on:click={() => chatRef.set({
                 displayName: 'Tegan Seitz',
                 emailHash: 'af9d7c478225dd961293e1bc59a2a943',
                 message: '📜 Check out this message',
@@ -107,7 +111,7 @@
 
         <input type="text" bind:value={newComment} />
         <button
-          on:click={() => postRef.set({
+          on:click={() => chatRef.set({
               displayName: 'Tegan Seitz',
               emailHash: 'af9d7c478225dd961293e1bc59a2a943',
               message: newComment,
@@ -119,8 +123,8 @@
         <!-- 4. 💬 Get all the comments in its subcollection -->
 
         <h3>Comments</h3>
-        <Collection
-          path={postRef.collection('comments')}
+        <!-- <Collection
+          path={chatRef.collection('comments')}
           query={ref => ref.orderBy('createdAt')}
           let:data={comments}
           let:ref={commentsRef}
@@ -130,7 +134,7 @@
 
           {#each comments as comment}
             <p>
-              <!-- ID: <em>{comment.ref.id}</em> -->
+              <!-- ID: <em>{comment.ref.id}</em> ->
             </p>
             <p>
               {comment.text}
@@ -150,8 +154,8 @@
 
           <span slot="loading">Loading comments...</span>
 
-        </Collection>
-      </Doc>
+        </Collection> -->
+      </Collection>
     </User>
   </FirebaseApp>
 
