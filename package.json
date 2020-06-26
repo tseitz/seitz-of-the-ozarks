@@ -17,5 +17,8 @@
     "sirv-cli": "^0.4.4",
     "svelte": "^3.16.3",
     "sveltefire": "^0.1.1"
+  },
+  "dependencies": {
+    "svelte-gravatar": "^1.0.3"
   }
 }
