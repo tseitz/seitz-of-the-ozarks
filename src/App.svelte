@@ -23,7 +23,7 @@
 
   firebase.initializeApp(firebaseConfig);
 
-  let newComment = "";
+  let newMessage = "";
 </script>
 
 <style>
@@ -54,7 +54,7 @@
 
 <main>
   <!-- 1. 🔥 Firebase App -->
-  <FirebaseApp {firebase}>
+  <FirebaseApp {firebase} perf>
 
     <h1>💪🔥 Mode Activated</h1>
 
@@ -65,9 +65,7 @@
 
     <!-- 2. 😀 Get the current user -->
     <User let:user let:auth>
-      Howdy 😀! User
-      <em>{user.uid}</em>
-
+      Howdy {user.displayName} 😀!
       <button on:click={() => auth.signOut()}>Sign Out</button>
 
       <div slot="signed-out">
@@ -93,10 +91,17 @@
         </p> -->
 
         {#each chats as chat}
-          <p>{chat.message}</p>
+          <div>
+            <img
+              src="https://www.gravatar.com/avatar/{chat.emailHash}"
+              height="50px"
+              alt="gravatar" />
+            <div>{user.displayName}</div>
+            <p>{chat.message}</p>
+          </div>
         {/each}
 
-        <span slot="loading">Loading post...</span>
+        <span slot="loading">Loading chats...</span>
         <span slot="fallback">
           <button
             on:click={() => chatRef.set({
@@ -109,52 +114,16 @@
           </button>
         </span>
 
-        <input type="text" bind:value={newComment} />
+        <input type="text" bind:value={newMessage} />
         <button
           on:click={() => chatRef.set({
               displayName: 'Tegan Seitz',
               emailHash: 'af9d7c478225dd961293e1bc59a2a943',
-              message: newComment,
+              message: newMessage,
               timestamp: Date.now()
             })}>
           Add Message
         </button>
-
-        <!-- 4. 💬 Get all the comments in its subcollection -->
-
-        <h3>Comments</h3>
-        <!-- <Collection
-          path={chatRef.collection('comments')}
-          query={ref => ref.orderBy('createdAt')}
-          let:data={comments}
-          let:ref={commentsRef}
-          log>
-
-          {#if !comments.length}No comments yet...{/if}
-
-          {#each comments as comment}
-            <p>
-              <!-- ID: <em>{comment.ref.id}</em> ->
-            </p>
-            <p>
-              {comment.text}
-              <button on:click={() => comment.ref.delete()}>Delete</button>
-            </p>
-          {/each}
-
-          <button
-            on:click={() => commentsRef.add({
-                displayName: 'Tegan Seitz',
-                emailHash: 'af9d7c478225dd961293e1bc59a2a943',
-                message: newComment,
-                timestamp: Date.now()
-              })}>
-            Add Comment
-          </button>
-
-          <span slot="loading">Loading comments...</span>
-
-        </Collection> -->
       </Collection>
     </User>
   </FirebaseApp>
