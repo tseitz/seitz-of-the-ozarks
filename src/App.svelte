@@ -61,12 +61,7 @@
   <!-- 1. 🔥 Firebase App -->
   <FirebaseApp {firebase} perf>
 
-    <h1>💪🔥 Mode Activated</h1>
-
-    <p>
-      <strong>Tip:</strong>
-      Open the browser console for development logging.
-    </p>
+    <h1>🏖 Mode Activated 😎</h1>
 
     <!-- 2. 😀 Get the current user -->
     <User let:user let:auth>
@@ -126,5 +121,3 @@
   </FirebaseApp>
 
 </main>
-
-<!-- Styles -->
