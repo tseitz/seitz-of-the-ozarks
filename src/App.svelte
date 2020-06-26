@@ -1,6 +1,7 @@
 <script>
   import { FirebaseApp, User, Doc, Collection } from "sveltefire";
-  import Gravatar from "svelte-gravatar";
+  import md5 from "md5";
+  import ChatItems from "./components/ChatItems.svelte";
 
   import firebase from "firebase/app";
   import "firebase/firestore";
@@ -27,6 +28,8 @@
   let newMessage = "";
   let email = "test@test.com";
   let password = "testing";
+
+  let chatQuery = ref => ref.orderBy("timestamp");
 </script>
 
 <style>
@@ -45,32 +48,6 @@
     height: 1px;
     border: none;
     background: rgb(195, 195, 195);
-  }
-
-  Gravatar {
-    border-radius: 100%;
-  }
-
-  .chat-wrap {
-    display: grid;
-    grid-template-areas:
-      "image name"
-      "image message"
-      "image message";
-    grid-template-columns: 65px 1fr;
-    text-align: initial;
-  }
-
-  .chat-display-name {
-    grid-area: name;
-  }
-
-  .chat-profile-pic {
-    grid-area: image;
-  }
-
-  .chat-message {
-    grid-area: message;
   }
 
   @media (min-width: 640px) {
@@ -93,6 +70,7 @@
 
     <!-- 2. 😀 Get the current user -->
     <User let:user let:auth>
+      <!-- TODO: Replace this with custom component -->
       Howdy {user.displayName || user.email} 😀!
       <button on:click={() => auth.signOut()}>Sign Out</button>
 
@@ -109,41 +87,22 @@
       <hr />
 
       <!-- 3. 📜 Get a Firestore document owned by a user -->
-      <Collection path={'chat'} let:data={chats} let:ref={chatRef} log>
+      <Collection
+        path={'chat'}
+        query={chatQuery}
+        let:data={chats}
+        let:ref={chatRef}
+        log>
 
-        <!-- <img
-          src="https://www.gravatar.com/avatar/{chat.emailHash}"
-          height="50px"
-          alt="gravatar" />
-        <h2>{chat.message}</h2> -->
-
-        <!-- <p>
-          Document created at
-          <em>{new Date(chat.timestamp).toLocaleString()}</em>
-        </p> -->
-
-        {#each chats as chat}
-          <div class="chat-wrap">
-            <!-- <img
-              class="chat-profile-pic"
-              src="https://www.gravatar.com/avatar/{chat.emailHash}"
-              height="60px"
-              alt="gravatar" /> -->
-            <Gravatar class="chat-profile-pic" size={60} email={user.email} />
-            <div class="chat-display-name">
-              {chat.displayName}
-              <small>{new Date(chat.timestamp).toLocaleString()}</small>
-            </div>
-            <p class="chat-message">{chat.message}</p>
-          </div>
-        {/each}
+        <ChatItems {chats} {user} />
 
         <span slot="loading">Loading chats...</span>
         <span slot="fallback">
           <button
             on:click={() => chatRef.add({
                 displayName: user.displayName || user.email,
-                emailHash: 'af9d7c478225dd961293e1bc59a2a943',
+                email: user.email,
+                emailHash: md5(user.email),
                 message: '📜 Check out this message',
                 timestamp: Date.now()
               })}>
@@ -155,7 +114,8 @@
         <button
           on:click={() => chatRef.add({
               displayName: user.displayName || user.email,
-              emailHash: 'af9d7c478225dd961293e1bc59a2a943',
+              email: user.email,
+              emailHash: md5(user.email),
               message: newMessage,
               timestamp: Date.now()
             })}>

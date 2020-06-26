@@ -19,6 +19,6 @@
     "sveltefire": "^0.1.1"
   },
   "dependencies": {
-    "svelte-gravatar": "^1.0.3"
+    "md5": "^2.2.1"
   }
 }
