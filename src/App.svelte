@@ -26,10 +26,45 @@
   firebase.initializeApp(firebaseConfig);
 
   let newMessage = "";
+  let chats = [];
   let email = "test@test.com";
   let password = "testing";
 
-  let chatQuery = ref => ref.orderBy("timestamp");
+  let chatQuery = ref => {
+    console.log("query");
+    return ref.orderBy("timestamp").limit(5);
+  };
+
+  function getMore(last) {
+    chatQuery = ref => {
+      return ref
+        .orderBy("timestamp")
+        .startAfter(last.timestamp)
+        .limit(5);
+    };
+  }
+
+  function createMessage(chatRef, user) {
+    chatRef.add({
+      displayName: user.displayName || user.email,
+      email: user.email,
+      emailHash: md5(user.email),
+      message: "📜 Check out this message",
+      timestamp: Date.now()
+    });
+    newMessage = "";
+  }
+
+  function sendMessage(chatRef, user) {
+    chatRef.add({
+      displayName: user.displayName || user.email,
+      email: user.email,
+      emailHash: md5(user.email),
+      message: newMessage,
+      timestamp: Date.now()
+    });
+    newMessage = "";
+  }
 </script>
 
 <style>
@@ -85,37 +120,30 @@
       <Collection
         path={'chat'}
         query={chatQuery}
-        let:data={chats}
         let:ref={chatRef}
+        let:last
+        on:data={e => {
+          console.log(e.detail.data);
+          if (!e.detail.data) {
+            return chats;
+          }
+          return (chats = [...chats, ...e.detail.data]);
+        }}
         log>
 
         <ChatItems {chats} {user} />
 
+        <button on:click={getMore(last)} />
+
         <span slot="loading">Loading chats...</span>
         <span slot="fallback">
-          <button
-            on:click={() => chatRef.add({
-                displayName: user.displayName || user.email,
-                email: user.email,
-                emailHash: md5(user.email),
-                message: '📜 Check out this message',
-                timestamp: Date.now()
-              })}>
+          <button on:click={createMessage(chatRef, user)}>
             Create Message
           </button>
         </span>
 
         <input type="text" bind:value={newMessage} />
-        <button
-          on:click={() => chatRef.add({
-              displayName: user.displayName || user.email,
-              email: user.email,
-              emailHash: md5(user.email),
-              message: newMessage,
-              timestamp: Date.now()
-            })}>
-          Add Message
-        </button>
+        <button on:click={sendMessage(chatRef, user)}>Add Message</button>
       </Collection>
     </User>
   </FirebaseApp>

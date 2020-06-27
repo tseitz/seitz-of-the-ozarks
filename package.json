@@ -4,7 +4,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public"
+    "start": "sirv public",
+    "deploy": "firebase deploy"
   },
   "devDependencies": {
     "firebase": "^7.5.2",

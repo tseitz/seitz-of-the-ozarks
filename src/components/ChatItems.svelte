@@ -32,13 +32,17 @@
     grid-row: 1/3;
     padding: 1em;
     border-radius: 16px;
-    max-width: 750px;
-    background-color: pink;
+    max-width: 600px;
+    background-color: #eee;
+  }
+
+  .chat-message {
+    margin: 0.5em 0;
   }
 
   .chat-wrap.me .chat-details {
     grid-column: 1/2;
-    background-color: lightslategray;
+    background-color: cadetblue;
   }
 
   .chat-wrap.me {
