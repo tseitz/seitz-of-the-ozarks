@@ -31,7 +31,6 @@
   let password = "testing";
 
   let chatQuery = ref => {
-    console.log("query");
     return ref.orderBy("timestamp").limit(5);
   };
 
@@ -123,15 +122,12 @@
         let:ref={chatRef}
         let:last
         on:data={e => {
-          console.log(e.detail.data);
-          if (!e.detail.data) {
-            return chats;
-          }
-          return (chats = [...chats, ...e.detail.data]);
+          if (!e.detail.data) return;
+          chats = [...chats, ...e.detail.data];
         }}
         log>
 
-        <ChatItems {chats} {user} />
+        <ChatItems {chats} {user} {last} {getMore} />
 
         <button on:click={getMore(last)} />
 
